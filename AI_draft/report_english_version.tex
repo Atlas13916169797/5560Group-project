@@ -408,13 +408,13 @@ Each design should document the compensator ZPK form, root locus, Bode plot, ste
 \section{Files, Reproduction and Sources}
 \begin{table}[H]\centering
 \caption{Current project scripts and outputs}
-\begin{tabular}{p{0.25\linewidth}p{0.65\linewidth}}\toprule
+\begin{tabular}{p{0.40\linewidth}p{0.50\linewidth}}\toprule
 Directory or entry point&Purpose\\\midrule
 \file{trim/run_trim.m}&Trim residuals, 60 s unforced simulation and integration check\\
 \file{linear/run_linear.m}&Central-difference A/B, subsystems, eigenvalues and local validation\\
 \file{Gqde/run_Gqde.m}&Extraction of the Group 8 $\Gq$ and frequency-response verification\\
 \file{AI_draft/loop.m}&Feedback transfer relationships for a supplied signed compensator\\
-\file{AI_draft/report_en.tex}&Single English LaTeX source, including a native TikZ block diagram\\
+\file{AI_draft/report_english_version.tex}&Single English LaTeX source, including a native TikZ block diagram\\
 \file{AI_draft/trim.png}&Figure exported from the actual trim simulation\\\bottomrule
 \end{tabular}
 \end{table}

@@ -2,7 +2,7 @@
 
 打开 report.pdf 查看已编译的 17 页中文报告。完整正文和框图均在单一源文件 report.tex 中；配平图 trim.png 需与它放在同一目录。
 
-英文备份：report_en.tex 与 report_en.pdf（16 页）。英文反馈框图在第 9 页；数值、编号公式和附录矩阵与中文版一致。两种语言共用 trim.png，编译方法相同，将命令中的 report.tex 替换为 report_en.tex 即可。
+英文备份：report_english_version.tex 与 report_english_version.pdf（16 页）。英文反馈框图在第 9 页；数值、编号公式和附录矩阵与中文版一致。两种语言共用 trim.png，编译方法相同，将命令中的 report.tex 替换为 report_english_version.tex 即可。
 
 报告包含：Group 8 飞机数据与气动参数、配平方法和实际结果、完整 A/B 与各子矩阵、数值验证、Gqde 提取和零极点、俯仰角速度反馈框图、信号定义、闭环推导和 SCK 关系。
 
