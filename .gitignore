@@ -1,0 +1,22 @@
+# Operating system and editor temporary files
+.DS_Store
+Thumbs.db
+Desktop.ini
+~$*
+*.asv
+*.m~
+*.swp
+*.tmp
+
+# LaTeX build intermediates
+*.aux
+*.log
+*.toc
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.xdv
+compile*.txt
+
+# Keep MATLAB data, P-code, PDF reports and figures under version control.

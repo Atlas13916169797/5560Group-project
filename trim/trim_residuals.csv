@@ -1,0 +1,13 @@
+State,DerivativeUnit,Derivative,Tolerance,Checked,WithinTolerance
+u,m/s^2,-2.4980018054066e-16,0.0001,1,1
+v,m/s^2,0,0.0001,1,1
+w,m/s^2,0,0.0001,1,1
+p,rad/s^2,0,1e-06,1,1
+q,rad/s^2,0,1e-06,1,1
+r,rad/s^2,0,1e-06,1,1
+phi,rad/s,0,1e-06,1,1
+theta,rad/s,0,1e-06,1,1
+psi,rad/s,0,1e-06,1,1
+Xe,m/s,102.888,NaN,0,1
+Ye,m/s,0,0.0001,1,1
+Ze,m/s,0,0.0001,1,1

@@ -1,0 +1,13 @@
+# Normalize text in Git while preserving scientific and document binaries.
+* text=auto eol=lf
+*.m text eol=lf
+*.md text eol=lf
+*.tex text eol=lf
+*.ps1 text eol=lf
+*.csv text eol=lf
+*.json text eol=lf
+*.p -text
+*.mat -text
+*.pdf -text
+*.png -text
+*.docx -text
