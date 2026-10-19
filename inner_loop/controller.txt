@@ -1,0 +1,5 @@
+Error e = qc - q_measured; delta_e = delta_e_trim + Kq*e.
+Kq(s) = -21.5(s+0.136)(s+0.160)/[s(s+0.0015)(s+0.31)(s+10.7)(s+14.5)]
+Angles in rad; pitch rates in rad/s. Feedback sensor = 1. Nominal actuator = 1.
+One origin integrator only. Do not add another integrator in sisotool.
+Minimal q-channel stability does not imply all internal states are asymptotically stable.

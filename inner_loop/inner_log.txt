@@ -1,0 +1,43 @@
+    Stable      DC       SSE_pct    Bandwidth_radps    Rise_s     SettlingFinal_s    SettlingCommand_s    Overshoot_pct    GainMargin_dB    PhaseMargin_deg    Crossover_radps    L20_dB     T20_dB     LNoiseMax_dB    TNoiseMax_dB    NoisePassed    PeakSensitivity    EquivalentNoiseBandwidth_radps    StepElevatorMin_deg    StepElevatorMax_deg    StepElevatorRateMax_degps    Iteration
+    ______    _______    _______    _______________    _______    _______________    _________________    _____________    _____________    _______________    _______________    _______    _______    ____________    ____________    ___________    _______________    ______________________________    ___________________    ___________________    _________________________    _________
+
+    true      0.96297     3.7034        5.2107         0.43371        10.919                 Inf             3.5158              Inf            70.418                  3          -27.22    -26.841       -27.22         -26.841          false           1.3314                     5.4233                      0.42435                0.76607                   0.78434                 1
+    true       0.9923    0.76953        5.6448         0.37746         4.546               3.938             16.787           17.419            57.155             2.9999         -28.885    -28.595      -28.885         -28.595          false           1.5314                     6.6902                      0.41792                0.76607                   0.75661                 2
+    true      0.99884    0.11616        4.2366         0.53963        1.6071               1.602             8.8973           10.806            60.301             2.0175          -41.39    -41.409       -41.39         -41.409          true            1.6422                     4.4768                      0.41937                0.76607                   0.47758                 3
+
+DESIGN_COMPLETE
+                            Speed_mps: 102.8880
+                          Speed_knots: 199.9983
+                           Altitude_m: 91.4400
+                        Density_kgpm3: 1.2143
+                   DynamicPressure_Pa: 6.4271e+03
+    ShortPeriodNaturalFrequency_radps: 5.3663
+                   ShortPeriodDamping: 0.7885
+                     ReducedFrequency: 0.0175
+         NominalDelayMarginEstimate_s: 0.5217
+
+    Stable      DC       SSE_pct    Bandwidth_radps    Rise_s     SettlingFinal_s    SettlingCommand_s    Overshoot_pct    GainMargin_dB    PhaseMargin_deg    Crossover_radps    L20_dB     T20_dB     LNoiseMax_dB    TNoiseMax_dB    NoisePassed    PeakSensitivity    EquivalentNoiseBandwidth_radps    Speed_knots    Throttle    TrimElevator_deg    TrimAlpha_deg    TrimMaxResidual    ValidTrim
+    ______    _______    _______    _______________    _______    _______________    _________________    _____________    _____________    _______________    _______________    _______    _______    ____________    ____________    ___________    _______________    ______________________________    ___________    ________    ________________    _____________    _______________    _________
+
+    true      0.99828    0.17201        3.8241         0.60135        1.7029               1.692             7.0507            11.32             61.99             1.8237         -43.228    -43.245      -43.228         -43.245          true            1.6037                     3.9576                    180        0.57033          0.7323            0.53631         5.9366e-12         true
+    true      0.99884    0.11616        4.2366         0.53963        1.6071               1.602             8.8973           10.806            60.301             2.0175          -41.39    -41.409       -41.39         -41.409          true            1.6422                     4.4768                    200        0.77032         0.76607            0.26309          2.498e-16         true
+    true      0.99903    0.09654        4.4355         0.51373        1.9991                2.04             9.8231           10.581            59.467             2.1133         -40.539    -40.559      -40.539         -40.559          true            1.6613                      4.742                    210          0.887         0.77946            0.15476          6.811e-12         true
+
+    Scenario     Duration_s    AssumedServoTau_s    AssumedRateLimit_degps    PeakPitchRate_degps    PeakAbsElevator_deg    PeakElevatorRate_degps    MaxLinearQDifference_degps    MaxAbsTheta_deg    SpeedMin_mps    SpeedMax_mps    LoadMin_g    LoadMax_g    FinalPitchRate_degps
+    _________    __________    _________________    ______________________    ___________________    ___________________    ______________________    __________________________    _______________    ____________    ____________    _________    _________    ____________________
+
+    "step"            5                 0                    Inf                    4.3476                 0.76607                 0.47751                      0.04034                 18.269            96.697          102.89        0.99963      1.7595              4.0043
+    "pulse"          10                 0                    Inf                    4.3476                  0.7732                 0.47751                     0.031408                 8.4081            93.874          102.89        0.96019      1.7595           -0.019559
+    "limited"        10              0.05                     60                    4.6259                 0.79023                 0.48441                      0.30914                 8.5453            93.871          102.89        0.92151      1.8038           -0.019695
+
+    AssumedSensorSigma_degps: 0.0200
+       NoiseFilterPole_radps: 20
+                  Duration_s: 10
+          PitchRateRMS_degps: 0.0080
+             ElevatorRMS_deg: 5.4694e-04
+            ElevatorPeak_deg: 0.0013
+
+VALIDATION_COMPLETE
+ZPK_EXPORT_COMPLETE
+PLOTS_COMPLETE
+All inner-loop files saved to C:\Users\MANSHU\Desktop\AERO5560\AAA_group_assignment\inner_loop

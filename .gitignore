@@ -7,6 +7,8 @@ Desktop.ini
 *.m~
 *.swp
 *.tmp
+__pycache__/
+*.py[cod]
 
 # LaTeX build intermediates
 *.aux

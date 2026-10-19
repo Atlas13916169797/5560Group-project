@@ -1,0 +1,10 @@
+Requirement,Result,Unit,Criterion,Passed
+Closed-loop bandwidth,4.23658564751268,rad/s,2 <= value <= 10,1
+Open-loop crossover,2.01747399194346,rad/s,2 <= value <= 10,1
+Final-value settling,1.60714629636918,s,value <= 3,1
+Command settling,1.602,s,value <= 3,1
+Steady-state error,0.116164257566032,percent,value < 1,1
+Overshoot,8.89731106831413,percent,value < 20,1
+Absolute elevator 0-10 s,0.766074466730258,deg,value <= 25,1
+Open-loop noise band maximum,-41.3900295524959,dB,value <= -40,1
+Closed-loop noise band maximum,-41.4089618207342,dB,value <= -40,1

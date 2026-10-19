@@ -1,5 +1,4 @@
 % !TeX program = xelatex
-% Single LaTeX source. Keep trim.png beside this file when compiling.
 \documentclass[UTF8,a4paper,11pt,fontset=windows]{ctexart}
 \usepackage[margin=22mm]{geometry}
 \usepackage{amsmath,amssymb,bm,booktabs,longtable,array,graphicx,float}
@@ -19,20 +18,20 @@
 \newcommand{\dt}{\delta_T}
 \newcommand{\Gq}{G_{q\delta_e}}
 \newcommand{\file}[1]{\mbox{\texttt{\small\detokenize{#1}}}}
-\title{AERO5560 Group 8\\飞机建模与俯仰角速度反馈回路\\\large 阶段报告：数据、配平、线性化与内环结构}
+\title{AERO5560 Group 8\\飞机建模与俯仰角速度反馈回路\\\large 阶段报告：数据、配平、线性化与内环设计}
 \author{Group 8}
-\date{2026年10月19日}
+\date{2026年10月20日}
 \begin{document}
 \maketitle
 \begin{abstract}
-本报告汇总 Group 8 已完成的飞机数据读取、配平检查、数值线性化、升降舵到俯仰角速度传递函数提取，并完成任务书中俯仰角速度反馈回路的构建与标注。给定的约 200 knots、300 ft 初始条件满足数值平衡，60 s 无扰动非线性运行保持初始速度和姿态。通过五组中心差分步长得到完整 $12\times12$ 的 $A$ 和 $12\times5$ 的 $B$，并提取固定高度的纵向四状态模型。由此获得具有原点零点、ZPK 增益约 $-88.196939$ 的 $\Gq(s)$。反馈回路采用单位测量和理想升降舵执行器，明确指令、误差、补偿器、舵角和输出的信号关系，并给出闭环与 SCK 表达式。本阶段补偿器 $K_q(s)$ 保持待设计形式；尚未声称满足闭环性能指标。
+本报告给出 Group 8 飞机数据、配平检查、数值 $A/B$ 矩阵、$G_{q\delta_e}$ 与三轮内环设计。所选闭环带宽为 4.237 rad/s，调节时间 1.607 s，稳态误差 0.116\%，超调 8.897\%；20 rad/s 开环与闭环噪声幅值分别为 -41.390、-41.409 dB。名义指标达标，并完成非名义与非线性验证。
 \end{abstract}
 \clearpage
 \tableofcontents
 \clearpage
 
 \section{任务范围与建模约定}
-本阶段对应任务书纵向 Task 1 中的两项工作：确定指定飞机的 $\Gq$，以及构建以升降舵控制俯仰角速度的反馈回路、绘制并标注框图。此前的数据读取、配平和线性化作为两项工作的模型依据一并记录。三种补偿器方案的设计、外环、阵风分析、自动油门和完整自动驾驶仪集成属于后续工作。
+本报告完成纵向 Task 1 的飞机建模、$\Gq$ 提取、反馈框图与三轮补偿器设计。后续工作包括垂直速度外环、阵风分析、自动油门与完整系统集成。
 
 采用机体系速度与角速度、Euler 姿态角及地面位置状态：
 \begin{equation}
@@ -49,10 +48,10 @@
 \bm X=\bm X_{\rm ref}(t)+\Delta\bm X,\qquad
 \bm U=\bm U_0+\Delta\bm U.
 \end{equation}
-由于飞机在地面坐标中持续前进，$\bm X_{\rm ref}(t)$ 的 $X_e$ 分量不是常数。不能要求全部位置导数为零，也不能将增量舵角直接当作绝对舵角。
+参考轨迹沿 $X_e$ 方向前进，操纵变量采用相对 $\bm U_0$ 的增量。
 
 \section{Group 8 飞机数据}
-通过 MATLAB R2025b Update 7 执行本组 \file{FlightDataAircraft8.p}。初始条件加载自 \file{ICsAircraft8_200knts_300ft.mat}，从而获得完整参数结构和初始条件。参数文件中没有真实飞机型号或制造商名称，故以 Group 8 飞机模型称呼。
+通过 MATLAB R2025b Update 7 执行本组 \file{FlightDataAircraft8.p}。初始条件加载自 \file{ICsAircraft8_200knts_300ft.mat}。
 
 \subsection{质量、几何与推进参数}
 \begin{table}[H]\centering
@@ -72,7 +71,7 @@ $P_{\max}$&最大功率参数&253.504 kW\\
 $\eta$&螺旋桨效率参数&0.85\\\bottomrule
 \end{tabular}
 \end{table}
-由参数可得展弦比 $b^2/S=4.11765$，翼载 $mg/S=618.277\,\mathrm{N/m^2}$。最大功率参数不等于当前配平推力。
+由参数可得展弦比 $b^2/S=4.11765$，翼载 $mg/S=618.277\,\mathrm{N/m^2}$。
 
 为兼容当前课程非线性框架，按数据包说明添加旧字段的映射：
 \begin{lstlisting}
@@ -88,11 +87,10 @@ FlightData.Propeller = FlightData.Prop;
  &\phantom{[}0,\;0.004591730139,\;0,\;0,\;0,\;-91.44]^{\mathsf T},
 \end{aligned}
 \end{equation}
-其中长向量的各元素单位遵循前述状态定义。
 \begin{equation}
 \bm U_0=[0.7703166691,\;0.01337052176,\;0,\;0,\;0]^{\mathsf T}.
 \end{equation}
-为避免长向量排版及阅读歧义，主要状态另列于表~\ref{tab:trimpoint}。
+飞行条件见表~\ref{tab:trimpoint}。
 \begin{table}[H]\centering
 \caption{初始飞行条件与操纵量}\label{tab:trimpoint}
 \begin{tabular}{lr}\toprule
@@ -109,7 +107,7 @@ $p_0,q_0,r_0$&$0$\\
 \end{tabular}
 \end{table}
 
-机体系 $w_0=0.4724322704$ m/s 不表示飞机正在爬升。地面垂直速度为
+地面垂直速度为
 \begin{equation}\label{eq:vs}
 V_s=u\sin\theta-v\sin\phi\cos\theta-w\cos\phi\cos\theta.
 \end{equation}
@@ -149,7 +147,7 @@ $\dot X_e$&$102.888$ m/s，正常前进\\
 $\dot Y_e,\dot Z_e$&$0$ m/s\\\bottomrule
 \end{tabular}
 \end{table}
-本次工程诊断容差为：平动加速度 $10^{-4}$ m/s$^2$、角加速度和姿态变化率 $10^{-6}$（各自 SI 单位）、侧向及垂向地面速度 $10^{-4}$ m/s。这些容差不是课程给定评分指标，实际残差远小于所选容差。
+本次工程诊断容差为：平动加速度 $10^{-4}$ m/s$^2$、角加速度和姿态变化率 $10^{-6}$（各自 SI 单位）、侧向及垂向地面速度 $10^{-4}$ m/s。
 
 固定 $\bm U_0$、不加入阵风与反馈，使用 \texttt{ode45} 积分 60 s。第一组设置为相对容差 $10^{-9}$、绝对容差 $10^{-11}$、最大步长 0.05 s；复核组为 $10^{-10}$、$10^{-12}$、0.025 s。输出采样间隔为 0.1 s，共 601 点。
 
@@ -158,7 +156,7 @@ $\dot Y_e,\dot Z_e$&$0$ m/s\\\bottomrule
 \includegraphics[width=0.94\linewidth]{trim.png}
 \caption{Group 8 在固定初始操纵量、零阵风条件下的 60 s 非线性自由运行。}\label{fig:trim}
 \end{figure}
-精确平衡点在无扰动下保持不动，并不能单独证明对扰动稳定；稳定性还需通过线性化极点和扰动响应评价。
+稳定性由下文线性化极点与扰动响应评价。
 
 \section{数值线性化与状态空间模型}
 \subsection{中心差分与数值验证}
@@ -184,7 +182,7 @@ $3\times10^{-6}$&$1.1302\times10^{-11}$&$1.6652\times10^{-11}$\\
 $10^{-6}$&$2.3360\times10^{-10}$&$9.7214\times10^{-11}$\\\bottomrule
 \end{tabular}
 \end{table}
-用独立混合扰动检查 Taylor 余项；扰动幅度连续减半时，余项由约 $5.2498\times10^{-5}$、$1.3124\times10^{-5}$ 减为 $3.2808\times10^{-6}$，缩小比为 4.0002、4.0001，符合一阶线性化的二阶余项特性。整体范数一致性不表示每个近零元素都具有相同相对精度。
+用独立混合扰动检查 Taylor 余项；扰动幅度连续减半时，余项由约 $5.2498\times10^{-5}$、$1.3124\times10^{-5}$ 减为 $3.2808\times10^{-6}$，缩小比为 4.0002、4.0001，符合一阶线性化的二阶余项特性。
 
 \subsection{纵向四状态模型}
 固定高度近似下，取状态索引 $[1,3,5,8]$、输入索引 $[1,2]$：
@@ -208,7 +206,7 @@ B_\ell=\begin{bmatrix}
 0&0
 \end{bmatrix}.
 \end{equation}
-此模型的第二个状态为 $w$ 而不是迎角 $\alpha$；更换为迎角状态时必须同时作坐标变换。
+第二个状态为机体系速度 $w$。
 
 纵向四状态特征值为
 \begin{equation}
@@ -218,9 +216,9 @@ B_\ell=\begin{bmatrix}
 分别对应短周期和长周期，均位于左半平面。
 
 \subsection{高度状态及横航向模型}
-完整 $A$ 的 $Z_e$ 列存在非零项；含高度的纵向状态可取 $[u,w,q,\theta,Z_e]$，其矩阵已保存。四状态近似忽略高度反馈，本报告提取 $\Gq$ 使用式~\eqref{eq:alon}--\eqref{eq:blon}，不混用五状态传递函数。
+完整 $A$ 的 $Z_e$ 列存在非零项；含高度的纵向状态可取 $[u,w,q,\theta,Z_e]$，其矩阵已保存。四状态近似忽略高度反馈，本报告提取 $\Gq$ 使用式~\eqref{eq:alon}--\eqref{eq:blon}。
 
-横航向状态取 $[v,p,r,\phi,\psi]$，输入为副翼和方向舵。其极点约为 $-13.81679$、$-0.719193\pm2.625197\mathrm i$、$-0.0119723$ 及航向积分极点 0。完整模型中的位置/航向零特征值不等同于发散动态，也不能据此称所有位置状态渐近回到原点。完整矩阵及附加子矩阵见附录。
+横航向状态取 $[v,p,r,\phi,\psi]$，输入为副翼和方向舵。其极点约为 $-13.81679$、$-0.719193\pm2.625197\mathrm i$、$-0.0119723$ 及航向积分极点 0。位置与航向包含中性运动学模态。完整矩阵及附加子矩阵见附录。
 
 \subsection{小阶跃线性与非线性比较}
 采用完整 12 状态 $A,B$，分别施加 $+0.05^\circ$ 升降舵增量和 $+0.001$ 油门增量，仿真 10 s。线性解使用矩阵指数，非线性解使用 \texttt{ode45}；比较速度、$q$ 与由式~\eqref{eq:vs} 定义的垂直速度。
@@ -232,7 +230,7 @@ B_\ell=\begin{bmatrix}
 油门增量&$2.0867\times10^{-6}$&$1.3892\times10^{-7}$&$2.5237\times10^{-7}$\\\bottomrule
 \end{tabular}
 \end{table}
-升降舵测试前 2 s 的 $V_s$ 最大误差约 0.004968 m/s，为同期非线性响应峰值的 0.2253\%。但到 10 s，$V_s$ 峰值约 11.93 m/s、速度变化约 4.69 m/s，已逐渐偏离初始点，$V_s$ 相对误差升至约 5.38\%。因此模型在局部范围内吻合良好，不能将持续输入后的大范围运动也视为微小扰动。
+升降舵测试前 2 s 的 $V_s$ 最大误差约 0.004968 m/s，为同期非线性响应峰值的 0.2253\%。但到 10 s，$V_s$ 峰值约 11.93 m/s、速度变化约 4.69 m/s，已逐渐偏离初始点，$V_s$ 相对误差升至约 5.38\%。误差随飞机偏离配平点而增大。
 
 \section{提取升降舵到俯仰角速度的传递函数}
 \subsection{输出选择与推导}
@@ -280,9 +278,9 @@ z=0,\quad -4.704978073,\quad -0.06347365466.
 
 \section{俯仰角速度反馈回路构建}\label{sec:loop}
 \subsection{控制目标与回路假设}
-内环目标是利用升降舵，使实际俯仰角速度增量 $\Delta q$ 跟随指令 $\Delta q_c$。采用单位测量 $H_q(s)=1$、理想执行器 $A_e(s)=1$，并以线性小扰动模型设计。真实舵面限幅将在响应检查与非线性实现中按式~\eqref{eq:limit} 处理；限幅属于非线性，不能并入本节固定 LTI 传递函数。
+内环目标是利用升降舵，使实际俯仰角速度增量 $\Delta q$ 跟随指令 $\Delta q_c$。采用单位测量 $H_q(s)=1$、理想执行器 $A_e(s)=1$，并以线性小扰动模型设计。真实舵面限幅将在响应检查与非线性实现中按式~\eqref{eq:limit} 处理。
 
-当前补偿器记为 $K_q(s)$，其阶次和参数在后续至少三种设计方案中确定。下图完整给出本阶段确定的拓扑和信号。
+反馈结构采用有符号补偿器 $K_q(s)$。
 
 \begin{figure}[H]\centering
 \begin{tikzpicture}[>=Latex,font=\small,
@@ -307,7 +305,7 @@ z=0,\quad -4.704978073,\quad -0.06347365466.
 \node[align=center,font=\footnotesize] at (7.2,-3.05)
 {角速度信号：rad/s；升降舵信号：rad；全部为相对配平的增量。};
 \end{tikzpicture}
-\caption{以升降舵控制俯仰角速度的单位负反馈回路。补偿器包含所需符号，参数待设计。}\label{fig:loop}
+\caption{以升降舵控制俯仰角速度的单位负反馈回路。补偿器包含所需符号，最终参数见下文。}\label{fig:loop}
 \end{figure}
 
 \begin{table}[H]\centering
@@ -332,7 +330,7 @@ $H_q(s)=1$&单位角速度测量反馈&无量纲\\\bottomrule
 \begin{equation}\label{eq:error}
 e_q=\Delta q_c-\Delta q_m.
 \end{equation}
-当指令高于实际角速度时，误差为正。由于本飞机正升降舵增量对 $q$ 的直接作用为负，控制器应给出适当负升降舵动作。因此将符号保留在补偿器内，写为 $K_q=-\bar K_q$。这只是统一符号约定，不能替代根轨迹、频域及闭环极点检查，不能仅凭求和点的负号断言稳定。
+飞机增益为负，正角速度误差需要负升降舵动作。符号包含在 $K_q=-\bar K_q$ 中，稳定性由极点与裕度检查。
 
 信号关系依次为
 \begin{align}
@@ -374,48 +372,68 @@ S_q=\frac{1}{1+\Gq K_q},\qquad
 \begin{equation}
 D_GD_K+N_GN_K=0.
 \end{equation}
-该式中的 $N_K$ 已包含补偿器符号。若使用 $K_q=-\bar K_q$，不能在其他位置重复添加或遗漏负号。后续选定补偿器后，应据此得到具体闭环 ZPK；本阶段保留符号关系。
+该式中的 $N_K$ 包含控制器符号，最终数值 ZPK 见 \file{inner_loop/zpk.txt}。
 
 \subsection{实际输入偏置与 MATLAB 构造}
 线性回路输出的是 $\Delta\de$。进入非线性飞机时需执行
 \begin{equation}
 \de(t)=0.01337052176+\Delta\de(t)\quad(\mathrm{rad}),
 \end{equation}
-并检查绝对舵角限位。线性框图的理想执行器不会自动执行限幅。
+并在非线性实现中执行绝对舵角限幅。
 
-设 $K_q$ 已由后续设计给出，则可在 MATLAB 构造同一回路：
+对本次选定的有符号 $K_q$，可在 MATLAB 构造同一回路：
 \begin{lstlisting}
 load('Gqde.mat', 'Gqde');
-% Kq must contain the intended controller sign.
 Lq = Gqde * Kq;
 Sq = feedback(1, Lq);       % error / q_command
 Cq_closed = feedback(Lq,1); % q / q_command
 Uq = feedback(Kq,Gqde);     % elevator_increment / q_command
-% q_command = deg2rad(4);    % subsequent performance test
 \end{lstlisting}
-等价函数保存在 \file{loop.m}，需要调用者传入已选定的 $K_q$，不会任意指定一个控制器后宣称满足指标。
+\file{loop.m} 根据传入的有符号 $K_q$ 构造反馈模型。
 
-\section{后续补偿器设计的验收基准}
-下一阶段使用 $4^\circ$/s 的俯仰角速度指令，比较至少三种补偿器方案。任务书要求：调节时间 3 s、稳态误差小于 1\%、最大超调小于 20\%、升降舵不越限，并给出 2--10 rad/s 的频率目标与 20 rad/s noise bandwidth。
+\clearpage\section{俯仰角速度内环设计}
+200 节、300 ft 时，所选闭环带宽为 4.237 rad/s，开环交越频率为 2.017 rad/s；短周期固有频率为 5.366 rad/s。三轮补偿器为：
+\begin{align}
+K_{q,1}(s)&=-0.1961/s,\\
+K_{q,2}(s)&=\frac{-5.835(s+0.5)}{s(s+0.1)(s+30)},\\
+K_{q,3}(s)&=\frac{-21.5(s+0.136)(s+0.16)}{s(s+0.0015)(s+0.31)(s+10.7)(s+14.5)}.
+\end{align}
+SISOtool 使用 $P_q=\operatorname{minreal}(-G/s)$ 与 $F_q=-sK_q$。一个积分器抵消最小 q 通道的原点零点；所得 type-0 开环需满足 $L(0)>99$，使误差小于 1\%。控制器零极点均为实数，开环严格真有理。
+\begin{table}[H]\centering\small\caption{三轮补偿器指标}
+\begin{tabular}{lrrr}\toprule
+指标 & 1 & 2 & 3\\\midrule
+$t_s$ (s) & 10.919 & 4.546 & 1.607\\
+$t_{s,command}$ (s) & $\infty$ & 3.938 & 1.602\\
+SSE (\%) & 3.703 & 0.770 & 0.116\\
+Overshoot (\%) & 3.516 & 16.787 & 8.897\\
+$\omega_{BW}$ (rad/s) & 5.211 & 5.645 & 4.237\\
+$|L(j20)|$ (dB) & -27.220 & -28.885 & -41.390\\
+$|T(j20)|$ (dB) & -26.841 & -28.595 & -41.409\\
+\bottomrule\end{tabular}\end{table}
 
-任务书将 crossover frequency 与 $-3$ dB 点并列，通常开环 0 dB 交越频率与闭环 $-3$ dB 带宽是不同量；后续应分别标注、避免混用。Lecture 8-2 的上升时间定义也与 MATLAB 常见默认 10--90\% 不同，指标表需声明具体定义。
+4 deg/s 阶跃前 10 s 的绝对升降舵为 0.4194--0.7661 度，相位裕度 60.301 度，增益裕度 10.806 dB。20 rad/s 噪声幅值满足 Lecture 9-1 第 9、17 页的 $-40$ dB 标准，20--$10^5$ rad/s 检查频段也全部通过。
 
-每种设计应记录补偿器 ZPK、根轨迹、Bode、阶跃响应、升降舵活动与指标对照表。当前已建立飞机 plant 与反馈架构，尚未对这些闭环指标给出达标结论。
+独立配平的 180、200、210 节工况满足主要时域和噪声指标。假设 50 ms 舵机的超调为 15.88\%，主要名义指标通过；100 ms 时超调 22.31\%、调节时间 3.757 s，两项超限。27 种参数扰动中，21 种满足全部时域阈值。
+
+由 $\dot\theta=q$，未约简系统保留中性模态。2 s 非线性脉冲的载荷峰值为 1.759 g，固定油门时速度降至 93.874 m/s，后续仍需姿态管理与自动油门。
+\begin{figure}[H]\centering\includegraphics[width=\linewidth]{../inner_loop/comparison.pdf}
+\caption{三轮设计的 q、升降舵、互补灵敏度与灵敏度。}\end{figure}
+完整图表与验证见\href{../inner_loop/inner_loop_report.pdf}{详细内环报告}。运行 \file{inner_loop/run_inner.m} 复现，使用 \file{open_sisotool(3)} 查看模型。
 
 \section{文件、复现与来源}
 \begin{table}[H]\centering
 \caption{当前项目中的计算文件与结果}
-\begin{tabular}{p{0.25\linewidth}p{0.65\linewidth}}\toprule
+\begin{tabular}{p{0.47\linewidth}p{0.43\linewidth}}\toprule
 目录/入口&用途\\\midrule
 \file{trim/run_trim.m}&配平残差、60 s 自由运行及积分复核\\
-\file{linear/run_linear.m}&中心差分 A/B、子系统、特征值及局部验证\\
+\file{A_B_Matrix/run_linear.m}&中心差分 A/B、子系统、特征值及局部验证\\
 \file{Gqde/run_Gqde.m}&提取本组 $\Gq$ 并核对频响\\
 \file{AI_draft/loop.m}&传入有符号补偿器后构造本节反馈传递关系\\
 \file{AI_draft/report.tex}&本单一 LaTeX 源文件，框图使用原生 TikZ\\
 \file{AI_draft/trim.png}&由实际配平仿真导出的图\\\bottomrule
 \end{tabular}
 \end{table}
-本报告打印矩阵与系数经过舍入，后续计算应读取 MAT/JSON 中的完整精度数值。报告使用中文进行方法说明，可作为后续课程最终报告的建模与内环架构部分基础。
+本报告打印矩阵与系数经过舍入，后续计算应读取 MAT/JSON 中的完整精度数值。
 
 \begin{thebibliography}{9}
 \bibitem{brief} AERO5560, \emph{Group Project: Aircraft Closed-Loop Control System Design and Analysis}, 项目任务书，第 1--5 页。
@@ -497,7 +515,7 @@ Uq = feedback(Kq,Gqde);     % elevator_increment / q_command
 
 \clearpage
 \section{读取的完整气动参数}
-保留参数函数原字段名。角度、角速度及变化率导数在气动模型中可能使用无量纲变量，不能直接当作有量纲 $A/B$ 元素。
+保留原始参数字段名。气动导数遵循原模型的无量纲约定，$A/B$ 通过数值线性化获得。
 \begingroup\small\renewcommand{\arraystretch}{1.05}
 \begin{table}[H]\centering\caption{Group 8 原始气动字段}\label{tab:aero}
 \begin{tabular}{lrlr}\toprule 字段&数值&字段&数值\\\midrule

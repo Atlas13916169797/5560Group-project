@@ -1,5 +1,4 @@
 % !TeX program = xelatex
-% Single LaTeX source. Keep trim.png beside this file when compiling.
 \documentclass[a4paper,11pt]{article}
 \usepackage[margin=22mm]{geometry}
 \usepackage{amsmath,amssymb,bm,booktabs,longtable,array,graphicx,float}
@@ -19,20 +18,20 @@
 \newcommand{\dt}{\delta_T}
 \newcommand{\Gq}{G_{q\delta_e}}
 \newcommand{\file}[1]{\mbox{\texttt{\small\detokenize{#1}}}}
-\title{AERO5560 Group 8\\Aircraft Modelling and Pitch-Rate Feedback\\\large Progress Report: Data, Trim, Linearisation and Inner-Loop Architecture}
+\title{AERO5560 Group 8\\Aircraft Modelling and Pitch-Rate Feedback\\\large Progress Report: Data, Trim, Linearisation and Inner-Loop Design}
 \author{Group 8}
-\date{19 October 2026}
+\date{20 October 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
-This report documents the completed extraction of Group 8 aircraft data, trim verification, numerical linearisation, and the elevator-to-pitch-rate transfer function, together with the construction and labelling of the pitch-rate feedback loop required by the assignment. The supplied initial condition, approximately 200 knots at 300 ft, satisfies numerical equilibrium and maintains its initial speed and attitude during a 60 s undisturbed nonlinear simulation. Five central-difference step sizes are used to obtain the full $12\times12$ state matrix $A$ and $12\times5$ input matrix $B$, followed by a fixed-altitude, four-state longitudinal model. The resulting $\Gq(s)$ has a zero at the origin and a ZPK gain of approximately $-88.196939$. The feedback architecture uses unity measurement and an ideal elevator actuator, with all command, error, control and output signals defined. Closed-loop and sensitivity--complementary-sensitivity--compensator (SCK) expressions are derived. The compensator $K_q(s)$ remains to be designed; no claim is made that the closed-loop performance specifications have been met.
+Group 8 aircraft data, trim verification, numerical $A/B$ matrices and $G_{q\delta_e}$ support three pitch-rate compensator designs. The selected loop achieves 4.237 rad/s bandwidth, 1.607 s settling, 0.116\% error and 8.897\% overshoot. At 20 rad/s, open-loop and closed-loop noise magnitudes are -41.390 and -41.409 dB. Nominal targets are met; off-nominal and nonlinear tests define the checked range.
 \end{abstract}
 \clearpage
 \tableofcontents
 \clearpage
 
 \section{Scope and Modelling Conventions}
-This stage addresses two requirements in Longitudinal Task 1: determining $\Gq$ for the assigned aircraft, and constructing a fully labelled feedback loop that controls pitch rate using the elevator. The preceding data extraction, trim verification and linearisation provide the model used for these requirements. The three compensator designs, outer loop, gust analysis, auto-throttle and complete autopilot integration remain subsequent tasks.
+Longitudinal Task 1 is addressed through aircraft modelling, $\Gq$, a labelled feedback loop and three compensator designs. The vertical-speed loop, gust analysis, auto-throttle and full integration follow.
 
 The full state vector contains body-axis velocities and angular rates, Euler attitude angles, and earth-frame positions:
 \begin{equation}
@@ -49,10 +48,10 @@ Linear-model variables are increments about the nominal flight trajectory:
 \bm X=\bm X_{\rm ref}(t)+\Delta\bm X,\qquad
 \bm U=\bm U_0+\Delta\bm U.
 \end{equation}
-Because the aircraft continues to move forward in earth coordinates, the $X_e$ component of $\bm X_{\rm ref}(t)$ is not constant. The position derivatives must not all be required to vanish, and an incremental control deflection must not be treated as an absolute deflection.
+The reference trajectory advances in $X_e$; control variables are increments about $\bm U_0$.
 
 \section{Group 8 Aircraft Data}
-The Group 8 function \file{FlightDataAircraft8.p} was executed in MATLAB R2025b Update 7. Initial conditions were loaded from \file{ICsAircraft8_200knts_300ft.mat}. These files provide the aircraft parameter structure and initial vectors. The data do not identify a real aircraft type or manufacturer; the model is therefore referred to as the Group 8 aircraft.
+The Group 8 function \file{FlightDataAircraft8.p} was executed in MATLAB R2025b Update 7. Initial conditions were loaded from \file{ICsAircraft8_200knts_300ft.mat}.
 
 \subsection{Mass, Geometry and Propulsion}
 \begin{table}[H]\centering
@@ -72,7 +71,7 @@ $P_{\max}$&Maximum power parameter&253.504 kW\\
 $\eta$&Propeller efficiency parameter&0.85\\\bottomrule
 \end{tabular}
 \end{table}
-The corresponding aspect ratio is $b^2/S=4.11765$, and wing loading is $mg/S=618.277\,\mathrm{N/m^2}$. The maximum power parameter is not the thrust at the trim condition.
+The corresponding aspect ratio is $b^2/S=4.11765$, and wing loading is $mg/S=618.277\,\mathrm{N/m^2}$.
 
 The legacy fields are mapped to the names required by the current nonlinear simulation framework, as instructed in the data package:
 \begin{lstlisting}
@@ -88,11 +87,10 @@ FlightData.Propeller = FlightData.Prop;
  &\phantom{[}0,\;0.004591730139,\;0,\;0,\;0,\;-91.44]^{\mathsf T},
 \end{aligned}
 \end{equation}
-Each entry uses the units specified in the state-vector definition above.
 \begin{equation}
 \bm U_0=[0.7703166691,\;0.01337052176,\;0,\;0,\;0]^{\mathsf T}.
 \end{equation}
-The principal conditions are also listed in Table~\ref{tab:trimpoint} for clarity.
+The flight condition is listed in Table~\ref{tab:trimpoint}.
 \begin{table}[H]\centering
 \caption{Initial flight condition and controls}\label{tab:trimpoint}
 \begin{tabular}{lr}\toprule
@@ -109,7 +107,7 @@ Aileron, rudder and flap&$0^\circ$\\\bottomrule
 \end{tabular}
 \end{table}
 
-The body-axis velocity $w_0=0.4724322704$ m/s does not imply a climb. Earth-frame vertical speed is
+Earth-frame vertical speed is
 \begin{equation}\label{eq:vs}
 V_s=u\sin\theta-v\sin\phi\cos\theta-w\cos\phi\cos\theta.
 \end{equation}
@@ -152,7 +150,7 @@ $\dot X_e$&$102.888$ m/s, expected forward motion\\
 $\dot Y_e,\dot Z_e$&$0$ m/s\\\bottomrule
 \end{tabular}
 \end{table}
-The diagnostic tolerances chosen for this check are $10^{-4}$ m/s$^2$ for translational acceleration, $10^{-6}$ in the corresponding SI units for angular acceleration and attitude rates, and $10^{-4}$ m/s for lateral and vertical earth-frame velocities. These are engineering checks rather than assignment grading thresholds; the actual residuals are much smaller.
+The diagnostic tolerances chosen for this check are $10^{-4}$ m/s$^2$ for translational acceleration, $10^{-6}$ in the corresponding SI units for angular acceleration and attitude rates, and $10^{-4}$ m/s for lateral and vertical earth-frame velocities.
 
 With $\bm U_0$ fixed and no gust or feedback, the full nonlinear model is integrated for 60 s using \texttt{ode45}. The first run uses relative tolerance $10^{-9}$, absolute tolerance $10^{-11}$ and maximum step 0.05 s. A tighter check uses $10^{-10}$, $10^{-12}$ and 0.025 s. Outputs are sampled every 0.1 s, yielding 601 points.
 
@@ -161,7 +159,7 @@ Both runs retain the initial speed, altitude, vertical speed, angle of attack, p
 \includegraphics[width=0.94\linewidth]{trim.png}
 \caption{A 60 s nonlinear simulation of Group 8 with fixed initial controls and zero gust.}\label{fig:trim}
 \end{figure}
-Remaining at an exact equilibrium without disturbance does not by itself prove disturbance stability. Stability must also be assessed using the linearised poles and perturbed responses.
+Stability is assessed below using the linearised poles and perturbed responses.
 
 \section{Numerical Linearisation and State-Space Models}
 \subsection{Central Differences and Numerical Checks}
@@ -187,7 +185,7 @@ $3\times10^{-6}$&$1.1302\times10^{-11}$&$1.6652\times10^{-11}$\\
 $10^{-6}$&$2.3360\times10^{-10}$&$9.7214\times10^{-11}$\\\bottomrule
 \end{tabular}
 \end{table}
-An independent mixed-perturbation Taylor check gives residuals of approximately $5.2498\times10^{-5}$, $1.3124\times10^{-5}$ and $3.2808\times10^{-6}$ as the perturbation amplitude is successively halved. The error ratios, 4.0002 and 4.0001, agree with the quadratic remainder expected from first-order linearisation. Agreement in a global norm does not imply identical relative accuracy for individual near-zero entries.
+An independent mixed-perturbation Taylor check gives residuals of approximately $5.2498\times10^{-5}$, $1.3124\times10^{-5}$ and $3.2808\times10^{-6}$ as the perturbation amplitude is successively halved. The error ratios, 4.0002 and 4.0001, agree with the quadratic remainder expected from first-order linearisation.
 
 \subsection{Four-State Longitudinal Model}
 Under the fixed-altitude approximation, state indices $[1,3,5,8]$ and input indices $[1,2]$ give
@@ -211,7 +209,7 @@ B_\ell=\begin{bmatrix}
 0&0
 \end{bmatrix}.
 \end{equation}
-The second state is body-axis velocity $w$, not angle of attack $\alpha$. Changing to an angle-of-attack state requires a consistent transformation of both matrices.
+The second state is body-axis velocity $w$.
 
 The four-state longitudinal eigenvalues are
 \begin{equation}
@@ -223,7 +221,7 @@ These represent the short-period and phugoid modes, respectively, and lie in the
 \subsection{Altitude and Lateral-Directional Models}
 The $Z_e$ column of the full $A$ matrix contains nonzero terms. A five-state longitudinal model retaining altitude uses $[u,w,q,\theta,Z_e]$ and has also been saved. The four-state approximation omits altitude feedback. This report extracts $\Gq$ from Eqs.~\eqref{eq:alon}--\eqref{eq:blon}, consistently using the four-state model.
 
-The lateral-directional states are $[v,p,r,\phi,\psi]$, with aileron and rudder inputs. Their poles are approximately $-13.81679$, $-0.719193\pm2.625197\mathrm i$, $-0.0119723$, and a zero heading-integrator pole. Position/heading zero eigenvalues in the full model do not imply divergent dynamics, but neither do they establish asymptotic return of all position states to the origin. Full and additional subsystem matrices are provided in the appendices.
+The lateral-directional states are $[v,p,r,\phi,\psi]$, with aileron and rudder inputs. Their poles are approximately $-13.81679$, $-0.719193\pm2.625197\mathrm i$, $-0.0119723$, and a zero heading-integrator pole. Position and heading include neutral kinematic modes. Full and additional subsystem matrices are provided in the appendices.
 
 \subsection{Small-Step Linear and Nonlinear Comparisons}
 The full 12-state $A,B$ model is compared with the nonlinear model for a $+0.05^\circ$ elevator increment and a $+0.001$ throttle increment over 10 s. The linear response is computed using matrix exponentials and the nonlinear response using \texttt{ode45}. Outputs are airspeed, $q$, and the vertical speed defined in Eq.~\eqref{eq:vs}.
@@ -235,7 +233,7 @@ Elevator increment&0.016588&0.023974&0.641690\\
 Throttle increment&$2.0867\times10^{-6}$&$1.3892\times10^{-7}$&$2.5237\times10^{-7}$\\\bottomrule
 \end{tabular}
 \end{table}
-For the elevator test, the maximum $V_s$ error during the first 2 s is approximately 0.004968 m/s, or 0.2253\% of the nonlinear peak over that interval. By 10 s, however, the vertical-speed peak is approximately 11.93 m/s and the speed change is approximately 4.69 m/s. The aircraft has departed appreciably from the initial point, and the relative $V_s$ error grows to approximately 5.38\%. The comparison supports local agreement; sustained-input motion of this magnitude should not be treated as an infinitesimal perturbation.
+For the elevator test, the maximum $V_s$ error during the first 2 s is approximately 0.004968 m/s, or 0.2253\% of the nonlinear peak over that interval. By 10 s, however, the vertical-speed peak is approximately 11.93 m/s and the speed change is approximately 4.69 m/s. The aircraft has departed appreciably from the initial point, and the relative $V_s$ error grows to approximately 5.38\%. The growing error reflects departure from the trim point.
 
 \section{Elevator-to-Pitch-Rate Transfer Function}
 \subsection{Output Selection and Derivation}
@@ -283,9 +281,9 @@ Since $\Gq(0)=0$, pitch rate returns to zero following a constant elevator input
 
 \section{Pitch-Rate Feedback-Loop Construction}\label{sec:loop}
 \subsection{Objective and Assumptions}
-The inner-loop objective is to make the actual pitch-rate increment $\Delta q$ follow the command $\Delta q_c$ using the elevator. Unity measurement, $H_q(s)=1$, and an ideal actuator, $A_e(s)=1$, are assumed for the linear perturbation design. Physical deflection limits are checked using Eq.~\eqref{eq:limit} and enforced in the nonlinear implementation. Saturation is nonlinear and is not represented by a fixed LTI transfer function in this section.
+The inner-loop objective is to make the actual pitch-rate increment $\Delta q$ follow the command $\Delta q_c$ using the elevator. Unity measurement, $H_q(s)=1$, and an ideal actuator, $A_e(s)=1$, are assumed for the linear perturbation design. Physical deflection limits are checked using Eq.~\eqref{eq:limit} and enforced in the nonlinear implementation.
 
-The compensator is denoted $K_q(s)$. Its order and parameters will be selected through at least three subsequent design options. The block diagram below defines the architecture and all signals at this stage.
+The feedback structure uses the signed compensator $K_q(s)$.
 
 \begin{figure}[H]\centering
 \begin{tikzpicture}[>=Latex,font=\small,
@@ -310,7 +308,7 @@ The compensator is denoted $K_q(s)$. Its order and parameters will be selected t
 \node[align=center,font=\footnotesize] at (7.2,-3.05)
 {Rate signals: rad/s; elevator signals: rad; all signals are trim increments.};
 \end{tikzpicture}
-\caption{Unity negative-feedback pitch-rate loop using the elevator. The controller includes the required sign; its parameters remain to be designed.}\label{fig:loop}
+\caption{Unity negative-feedback pitch-rate loop using the elevator. The controller includes the required sign; the selected parameters are given below.}\label{fig:loop}
 \end{figure}
 
 \begin{table}[H]\centering
@@ -335,7 +333,7 @@ The summing junction implements
 \begin{equation}\label{eq:error}
 e_q=\Delta q_c-\Delta q_m.
 \end{equation}
-A command above the actual pitch rate produces positive error. In this aircraft model, a positive elevator increment has a negative direct effect on $q$, so the controller must generate an appropriate negative elevator action. The sign is retained within the compensator by writing $K_q=-\bar K_q$. This is a sign convention, not a stability proof. Root-locus, frequency-domain and closed-loop pole checks remain necessary; a minus sign at the summing junction alone does not establish stability.
+Positive rate error requires negative elevator action because the plant gain is negative. The sign is included in $K_q=-\bar K_q$; stability is checked using poles and margins.
 
 The signal relationships are
 \begin{align}
@@ -377,48 +375,68 @@ Let $N_G,D_G$ be the numerator and denominator in Eq.~\eqref{eq:gfactored}, and 
 \begin{equation}
 D_GD_K+N_GN_K=0.
 \end{equation}
-The numerator $N_K$ already includes the controller sign. When using $K_q=-\bar K_q$, the minus sign must not be duplicated or omitted elsewhere. Once the compensator is selected, these relationships provide the numerical closed-loop ZPK forms. Symbolic relationships are retained at this stage.
+The numerator $N_K$ includes the controller sign. Numerical ZPK forms are saved in the inner-loop folder as \file{zpk.txt}.
 
 \subsection{Trim Bias and MATLAB Construction}
 The linear loop produces the incremental elevator signal $\Delta\de$. For the nonlinear aircraft, the absolute input is
 \begin{equation}
 \de(t)=0.01337052176+\Delta\de(t)\quad(\mathrm{rad}),
 \end{equation}
-and must satisfy the absolute deflection limits. The ideal actuator in the linear diagram does not automatically implement saturation.
+and is limited in the nonlinear implementation.
 
-Once $K_q$ has been supplied by the subsequent design process, the same feedback structure can be constructed in MATLAB:
+For the selected signed $K_q$, the same feedback structure can be constructed in MATLAB:
 \begin{lstlisting}
 load('Gqde.mat', 'Gqde');
-% Kq must contain the intended controller sign.
 Lq = Gqde * Kq;
 Sq = feedback(1, Lq);       % error / q_command
 Cq_closed = feedback(Lq,1); % q / q_command
 Uq = feedback(Kq,Gqde);     % elevator_increment / q_command
-% q_command = deg2rad(4);    % subsequent performance test
 \end{lstlisting}
-An equivalent function is provided in \file{loop.m}. The caller must supply the selected, signed $K_q$; the function does not choose an arbitrary controller or imply that performance specifications are met.
+\file{loop.m} constructs these feedback models for a supplied signed $K_q$.
 
-\section{Specifications for Subsequent Compensator Design}
-The next stage compares at least three compensator designs using a $4^\circ$/s pitch-rate command. The assignment specifies a settling time of 3 s, steady-state error below 1\%, maximum overshoot below 20\%, and elevator deflection within its limits. It also gives a 2--10 rad/s frequency target and a noise bandwidth of 20 rad/s.
+\clearpage\section{Pitch-Rate Inner-Loop Design}
+At 200 knots and 300 ft, the selected bandwidth is 4.237 rad/s and open-loop crossover is 2.017 rad/s. The short-period natural frequency is 5.366 rad/s. Three compensator iterations are:
+\begin{align}
+K_{q,1}(s)&=-0.1961/s,\\
+K_{q,2}(s)&=\frac{-5.835(s+0.5)}{s(s+0.1)(s+30)},\\
+K_{q,3}(s)&=\frac{-21.5(s+0.136)(s+0.16)}{s(s+0.0015)(s+0.31)(s+10.7)(s+14.5)}.
+\end{align}
+SISOtool uses $P_q=\operatorname{minreal}(-G/s)$ and $F_q=-sK_q$. A single integrator cancels the plant origin zero in the minimal q channel. The type-0 loop requires $L(0)>99$ for error below 1\%. All controller poles and zeros are real, and the loop is strictly proper.
+\begin{table}[H]\centering\small\caption{Three compensator iterations}
+\begin{tabular}{lrrr}\toprule
+Metric & 1 & 2 & 3\\\midrule
+$t_s$ (s) & 10.919 & 4.546 & 1.607\\
+$t_{s,command}$ (s) & $\infty$ & 3.938 & 1.602\\
+SSE (\%) & 3.703 & 0.770 & 0.116\\
+Overshoot (\%) & 3.516 & 16.787 & 8.897\\
+$\omega_{BW}$ (rad/s) & 5.211 & 5.645 & 4.237\\
+$|L(j20)|$ (dB) & -27.220 & -28.885 & -41.390\\
+$|T(j20)|$ (dB) & -26.841 & -28.595 & -41.409\\
+\bottomrule\end{tabular}\end{table}
 
-The assignment associates crossover frequency with a $-3$ dB point. Open-loop 0 dB gain crossover and closed-loop $-3$ dB bandwidth are generally different quantities and should be reported separately. The rise-time convention in Lecture 8-2 also differs from MATLAB's common 10--90\% default; the chosen definition must be stated.
+The 4 deg/s step gives absolute elevator 0.4194--0.7661 deg over 0--10 s, phase margin 60.301 deg and gain margin 10.806 dB. The 20 rad/s noise magnitudes satisfy the $-40$ dB criterion in Lecture 9-1, slides 9 and 17. The checked 20--$10^5$ rad/s band also passes.
 
-Each design should document the compensator ZPK form, root locus, Bode plot, step response, elevator activity and a specification comparison table. The plant and feedback architecture are established here, but closed-loop compliance has not yet been demonstrated.
+Separate retrimmed 180, 200 and 210 knot points pass the main time-domain and noise targets. An assumed 50 ms actuator gives 15.88\% overshoot and passes the main nominal targets. At 100 ms, overshoot is 22.31\% and settling is 3.757 s, exceeding both limits. Of 27 parameter cases, 21 meet all time-domain thresholds.
+
+The unreduced system retains a neutral mode because $\dot\theta=q$. A 2 s nonlinear pulse reaches 1.759 g and minimum speed 93.874 m/s with fixed throttle. Attitude management and auto-throttle remain necessary.
+\begin{figure}[H]\centering\includegraphics[width=\linewidth]{../inner_loop/comparison.pdf}
+\caption{Three iterations: q, elevator, complementary sensitivity and sensitivity.}\end{figure}
+Full plots and validation are in the \href{../inner_loop/inner_loop_report_english.pdf}{inner-loop report}. Run \file{inner_loop/run_inner.m}; inspect using \file{open_sisotool(3)}.
 
 \section{Files, Reproduction and Sources}
 \begin{table}[H]\centering
 \caption{Current project scripts and outputs}
-\begin{tabular}{p{0.40\linewidth}p{0.50\linewidth}}\toprule
+\begin{tabular}{p{0.47\linewidth}p{0.43\linewidth}}\toprule
 Directory or entry point&Purpose\\\midrule
 \file{trim/run_trim.m}&Trim residuals, 60 s unforced simulation and integration check\\
-\file{linear/run_linear.m}&Central-difference A/B, subsystems, eigenvalues and local validation\\
+\file{A_B_Matrix/run_linear.m}&Central-difference A/B, subsystems, eigenvalues and local validation\\
 \file{Gqde/run_Gqde.m}&Extraction of the Group 8 $\Gq$ and frequency-response verification\\
 \file{AI_draft/loop.m}&Feedback transfer relationships for a supplied signed compensator\\
 \file{AI_draft/report_english_version.tex}&Single English LaTeX source, including a native TikZ block diagram\\
 \file{AI_draft/trim.png}&Figure exported from the actual trim simulation\\\bottomrule
 \end{tabular}
 \end{table}
-Printed matrices and coefficients are rounded. Further numerical work should use the full-precision MAT/JSON files. This English backup preserves the technical content of the Chinese progress report and can support the modelling and inner-loop architecture sections of the final assignment report.
+Printed matrices and coefficients are rounded. Further numerical work should use the full-precision MAT/JSON files.
 
 \begin{thebibliography}{9}
 \bibitem{brief} AERO5560, \emph{Group Project: Aircraft Closed-Loop Control System Design and Analysis}, assignment brief, pp.~1--5.
@@ -500,7 +518,7 @@ States: $[v,p,r,\phi,\psi]$; inputs: $[\delta_a,\delta_r]$.
 
 \clearpage
 \section{Complete Extracted Aerodynamic Parameters}
-Original parameter-field names are retained. Angle, angular-rate and rate-of-change derivatives may use nondimensional variables within the aerodynamic model and must not be inserted directly as dimensional A/B entries.
+Original field names and nondimensional aerodynamic conventions are retained; dimensional $A/B$ matrices are obtained by numerical linearisation.
 \begingroup\small\renewcommand{\arraystretch}{1.05}
 \begin{table}[H]\centering\caption{Original Group 8 aerodynamic fields}\label{tab:aero}
 \begin{tabular}{lrlr}\toprule Field&Value&Field&Value\\\midrule

@@ -1,0 +1,4 @@
+MATLAB 25.2.0.3360999 (R2025b) Update 7
+open_sisotool(3) loaded the corrected design successfully.
+Pq=minreal(-Gq/s); Fq=-s*Kq; unity sensor and prefilter.
+Kq=-21.5(s+0.136)(s+0.160)/[s(s+0.0015)(s+0.31)(s+10.7)(s+14.5)].
