@@ -1,0 +1,95 @@
+Simulation Function Help
+
+aero5560_aero.p
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Calculates the total aerodynamic and propulsive forces and moments on the
+% aircraft including propulsion model for a propeller - IN BODY AXES.
+%
+% Usage:
+% [ForceCoeff, MomentCoeff] = aero5560_aero(X, Xg, Xdot, U, FlightData)
+%
+% Input:
+% X:            12x1 state vector [u;v;w;p;q;r;phi;theta;psi;Xe;Ye;Ze]
+% Xg:           6x1 gust vector [u;v;w;p;q;r]
+% Xdot:         12x1 state rate vector
+% U:            5x1 control vector [dt;de;da;dr;df]
+% FlightData:   Aircraft dynamics, derivative, inertial properties structure
+%
+% Output:
+% ForceCoeff:   3x1 force coefficient [CX;CY;CZ]
+% MomentCoeff:  3x1 moment coefficient [Cl;Cm;Cn]
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+aero5560_motion.p
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Calculates the State Rate Vector of the Aircraft at the given State, with
+% the given force and moments (obtained from aero4560_aero)
+%
+% Usage:
+% [Xdot] = aero5560_motion(X, ForceCoeff, MomentCoeff, FlightData)
+%
+% Input:
+% X:            12x1 state vector [u;v;w;p;q;r;phi;theta;psi;Xe;Ye;Ze]
+% ForceCoeff:   3x1 force coefficient [CX;CY;CZ]
+% MomentCoeff:  3x1 moment coefficient [Cl;Cm;Cn]
+% FlightData:   Aircraft dynamics, derivative, inertial properties structure
+%
+% Output:
+% Xdot:         12x1 state rate vector
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+aero5560_atmos.p
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Calculates atmospheric properties for a given altitude using ISA
+%
+% Usage:
+% function [rho,a]=aero5560_atmos(alt)
+%
+% Input:
+% alt:          Altitude in meters
+%
+% Output:
+% rho:          Density in kg/m^3
+% a:            Speed of sound in m/s
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+aero5560_euler.p
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Function to perform simple Euler integration of state equations 
+% for generic flight dynamic model
+%
+% Usage:
+% [X_out] = aero5560_euler(DT, X, Xg, U, FlightData)
+%
+% Input:
+% DT:           Discrete time increment
+% X:            12x1 state vector at T=T1
+% Xg:           6x1 gust vector
+% U:            5x1 control vector
+% FlightData:   Aircraft dynamics, derivative, inertial properties
+%
+% Output:
+% X_out:        12x1 state vector at T=T1+DT
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+aero5560_LoadFlightData.p
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This function generates and returns the flight data structure which
+% defines the aircraft data and aerodynamic derivatives.
+%
+% Aircraft data and aerodynamic derivatives  - CG 22% mac.
+% Flight config = clean_xx - flaps deflected 0 deg, clean configuration
+%
+% Usage:
+% [ FlightData ] = aero5560_LoadFlightData()
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

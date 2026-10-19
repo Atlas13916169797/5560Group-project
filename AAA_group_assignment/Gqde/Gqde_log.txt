@@ -1,0 +1,52 @@
+  zpk - 属性:
+
+                Z: {[3×1 double]}
+                P: {[4×1 double]}
+                K: -88.1969
+    DisplayFormat: 'roots'
+         Variable: 's'
+          IODelay: 0
+       InputDelay: 0
+      OutputDelay: 0
+        InputName: {'elevator'}
+        InputUnit: {''}
+       InputGroup: [1×1 struct]
+       OutputName: {'pitch_rate'}
+       OutputUnit: {''}
+      OutputGroup: [1×1 struct]
+            Notes: [0×1 string]
+         UserData: []
+             Name: ''
+               Ts: 0
+         TimeUnit: 'seconds'
+     SamplingGrid: [1×1 struct]
+
+     Type       Real       Imaginary
+    ______    _________    _________
+
+    "zero"       -4.705            0
+    "zero"    -0.063474            0
+    "zero"            0            0
+    "pole"      -4.2314       3.3004
+    "pole"      -4.2314      -3.3004
+    "pole"    -0.030397     0.077292
+    "pole"    -0.030397    -0.077292
+
+              Numerator: [0 -88.1969 -420.5628 -26.3393 0]
+            Denominator: [1 8.5235 29.3184 1.8091 0.1986]
+              ZerosReal: [3×1 double]
+              ZerosImag: [3×1 double]
+              PolesReal: [4×1 double]
+              PolesImag: [4×1 double]
+                   Gain: -88.1969
+           RawZerosReal: [3×1 double]
+           RawZerosImag: [3×1 double]
+       MaxRelativeError: 1.7846e-13
+    DirectRelativeError: 7.2037e-09
+                 DCGain: 0
+                  Units: 'q in rad/s; elevator increment in rad; s in 1/s'
+                      A: [4×4 double]
+                      B: [4×1 double]
+                      C: [0 0 1 0]
+                      D: 0
+

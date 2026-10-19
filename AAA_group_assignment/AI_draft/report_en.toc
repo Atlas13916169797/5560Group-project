@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {1}Scope and Modelling Conventions}{3}{section.1}%
+\contentsline {section}{\numberline {2}Group 8 Aircraft Data}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Mass, Geometry and Propulsion}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Initial State and Controls}{4}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Control Limits}{4}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Nonlinear Trim Verification}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Method}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Residuals and Unforced Simulation}{5}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Numerical Linearisation and State-Space Models}{6}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Central Differences and Numerical Checks}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Four-State Longitudinal Model}{7}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Altitude and Lateral-Directional Models}{7}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Small-Step Linear and Nonlinear Comparisons}{8}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Elevator-to-Pitch-Rate Transfer Function}{8}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Output Selection and Derivation}{8}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}ZPK and Polynomial Forms}{8}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Numerical Verification and Interpretation}{9}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Pitch-Rate Feedback-Loop Construction}{9}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Objective and Assumptions}{9}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Feedback Sign and Operation}{10}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Closed-Loop Derivation and SCK Expressions}{10}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Trim Bias and MATLAB Construction}{11}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Specifications for Subsequent Compensator Design}{11}{section.7}%
+\contentsline {section}{\numberline {8}Files, Reproduction and Sources}{12}{section.8}%
+\contentsline {section}{\numberline {A}Full Twelve-State Matrices}{13}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Full Input Matrix}{14}{subsection.A.1}%
+\contentsline {section}{\numberline {B}Additional Subsystem Matrices}{14}{appendix.B}%
+\contentsline {subsection}{\numberline {B.1}Five-State Longitudinal Model with Altitude}{14}{subsection.B.1}%
+\contentsline {subsection}{\numberline {B.2}Five-State Lateral-Directional Model}{14}{subsection.B.2}%
+\contentsline {section}{\numberline {C}Complete Extracted Aerodynamic Parameters}{16}{appendix.C}%
